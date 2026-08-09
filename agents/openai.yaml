@@ -1,0 +1,4 @@
+interface:
+  display_name: "Claude + Terra Delivery Loop"
+  short_description: "Claude 实施、Terra 复审、Codex 修复验收全流程"
+  default_prompt: "使用 $claude-terra-delivery-loop 按任务卡完成实施、复审、修复、验证与集成。"
