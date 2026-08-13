@@ -18,11 +18,18 @@ Keep the main agent as the only delivery owner. Never treat a worker or reviewer
 3. Use this skill inside an existing LoopX program when present; do not create a second task registry. Update LoopX only after verified writeback.
 4. For trivial, tightly coupled changes, let the main agent implement directly and retain the review/verification gates.
 
+## Apply the Ponytail solution gate
+
+Load the installed `ponytail` skill for every coding task. Respect an explicit user intensity; otherwise use `full`. After reading the complete affected flow, choose the first sufficient rung: prove no change is needed, reuse existing code, use the standard library, use a native platform feature, use an already-installed dependency, use one direct line, or add the minimum new code. For bug fixes, inspect every caller and fix the root cause once at the shared owner rather than patching only the reported symptom.
+
+Record the selected intensity, rung, non-goals, and any deliberate ceiling/upgrade trigger in the existing task packet; do not create another artifact or lifecycle. A deliberate simplification with a real ceiling requires a `ponytail:` comment naming the ceiling and upgrade trigger. Non-trivial logic must leave one minimal runnable regression check; it supplements rather than replaces project-required validation. Reject speculative abstractions, dependencies, configuration switches, compatibility layers, scaffolding, and documentation. Ponytail controls solution size only: it must not weaken explicit functionality, security, authorization, validation, accessibility, data integrity, business/state invariants, recovery, rollback, or required verification. If the baseline already satisfies acceptance, prove it before dispatch instead of manufacturing a diff.
+
 ## 1. Freeze the task packet
 
 Before dispatching, record:
 
 - one concrete objective and the observable acceptance result;
+- Ponytail intensity, first sufficient solution rung, explicit non-goals, any deliberate ceiling/upgrade trigger, and the one minimal runnable check required for non-trivial logic;
 - authoritative task/spec/design files;
 - allowed files or path globs and explicit forbidden areas;
 - source-of-truth UI references such as Figma node/page, screenshots, or demo project paths;
@@ -50,7 +57,7 @@ Never use destructive Git commands. Never let the worker commit, push, deploy, o
 
 When Claude implementation is requested or required by project rules, load and follow the installed `claude-code-dispatcher` skill. Use one worker by default.
 
-Give Claude the frozen task packet, including exact working directory, allowed paths, authoritative artifacts, constraints, acceptance criteria, and verification commands. Require it to inspect existing code before editing and to report the actual changed paths and command results.
+Give Claude the frozen task packet, including exact working directory, allowed paths, authoritative artifacts, Ponytail solution contract, constraints, acceptance criteria, and verification commands. Require it to inspect the complete affected flow before editing and to report the actual changed paths and command results.
 
 Do not use motivational or pressure prompts as a control mechanism. Narrow the task and make evidence requirements explicit.
 
@@ -80,12 +87,15 @@ ruby /path/to/claude-terra-delivery-loop/scripts/check_delivery_diff.rb \
 
 The gate fails on an empty diff, out-of-scope paths, deletions by default, or `git diff --check` errors. Repeat `--allow` and `--expect` as needed; pass `--allow-delete` only when deletion is explicitly in scope.
 
+Git does not report ignored files through the normal diff/untracked surfaces. If and only if the task explicitly authorizes one ignored regular file, record its pre-worker SHA-256 (or `ABSENT`) and pass it as exact `--allow-ignored 'path=baseline'`; also include that exact path in `--allow`/`--expect` when required. The checker rejects ignored directories and globs. Never authorize dependency/build trees or secret files this way.
+
 Always pass the immutable baseline revision recorded before the worker starts. Do not substitute the worker's current `HEAD`, because an unauthorized worker commit could otherwise hide its changes.
 
 Then inspect the changed content, not only filenames or statistics. Confirm:
 
 - the requested behavior exists in code or contract;
 - no unrelated formatting, dependency, import, or generated-file churn was mixed in;
+- the implementation used the first sufficient solution rung without speculative abstraction, configuration, or scaffolding;
 - worker verification really ran against the changed workspace;
 - reference UI/demo structure remains aligned when applicable.
 
@@ -100,15 +110,15 @@ If Claude reports success but produces no diff:
 
 ## 6. Run independent Terra reviews
 
-Use read-only subagents when available and allowed. Prefer three independent lenses for high-risk or cross-layer work:
+Use independent read-only reviewers only through mechanisms allowed by the applicable host/project rules. When built-in subagents are allowed, prefer three independent lenses for high-risk or cross-layer work:
 
 1. **Domain/state lens** — invariants, state owner, transitions, authorization, idempotency, concurrency, side effects, historical facts.
 2. **Schema/integration lens** — API/schema validity, runtime semantics, code generation, compatibility, call-site chain, error exits, migrations.
-3. **Delivery/reference lens** — task scope, tests, regression risk, UI/Figma/demo fidelity, missing states, cleanup and rollback.
+3. **Delivery/reference lens** — task scope, tests, regression risk, UI/Figma/demo fidelity, missing states, unjustified abstractions/dependencies/scaffolding, cleanup and rollback.
 
 Give each reviewer raw artifacts and task-local context, not prior findings or the intended answer. Require file/line evidence and only actionable P0/P1/P2 findings. Reviewers must not edit files.
 
-If concurrency is limited, run the lenses serially. If Terra is unavailable, use independent available reviewers and disclose the substitution.
+If built-in reviewers are disallowed or Terra is unavailable, keep Claude implementation through `claude-code-dispatcher`, then use an allowed independent read-only reviewer or primary-agent review and disclose the substitution. If concurrency is limited, run the lenses serially.
 
 ## 7. Fix under Codex ownership
 

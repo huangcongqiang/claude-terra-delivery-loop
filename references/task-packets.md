@@ -17,6 +17,15 @@ Authoritative inputs
 - <code/schema entrypoints>
 - <Figma node/demo/screenshot when applicable>
 
+Ponytail solution gate
+- Intensity: <full unless the user explicitly chose another level>
+- Complete affected flow: <entry → state owner → side effects → result/verification>
+- First sufficient rung: <no change / reuse / standard library / native platform / installed dependency / one direct line / minimum new code>
+- Explicit non-goals: <abstractions, dependencies, configuration, scaffolding, or adjacent cleanup not required>
+- Deliberate ceiling: <none, or `ponytail:` comment with the known ceiling and upgrade trigger>
+- Bug fix owner: <all callers inspected; shared root cause location, or not applicable>
+- Non-trivial logic: <one minimal runnable check; supplements rather than replaces required project validation>
+
 Allowed changes
 - <exact files or globs>
 
@@ -61,7 +70,8 @@ if none remain, say so explicitly.
 ```text
 Perform a read-only delivery review of the current candidate against the task packet and named
 source-of-truth references. Check scope, regression risk, tests, missing loading/empty/error/permission
-states, Figma/demo structure and layout fidelity when applicable, cleanup, and recovery.
+states, Figma/demo structure and layout fidelity when applicable, unjustified abstractions/dependencies/
+scaffolding, cleanup, and recovery. Do not recommend optional refactors that do not fix an acceptance gap.
 Do not modify files. Report only actionable P0/P1/P2 findings with tight file/line evidence;
 if none remain, say so explicitly.
 ```
